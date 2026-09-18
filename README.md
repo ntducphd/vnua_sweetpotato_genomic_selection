@@ -76,10 +76,9 @@ breeding programme ever has.
   composite's own correlation with the true value, a measure of how much true signal survives this
   population's phenotypic noise, not a theoretical bound: the equal-weight observed composite in
   fact edges out the out-of-fold GBLUP composite here. The 95% CI on the difference between the two
-  methods, **[0.117, 0.335], excludes
-  zero**. With a negative genetic trade-off present (Yield/Carotenoid true breeding-value
-  correlation r = −0.37), marker-based prediction outperforms a phenotype-only classical index on
-  this population.
+  methods, **[0.117, 0.335], excludes zero**. With a negative genetic trade-off present
+  (Yield/Carotenoid true breeding-value correlation r = −0.37), marker-based prediction outperforms
+  a phenotype-only classical index on this population.
 - **(B) Table 5's literal operational gate** (`06`, panel B): both methods' scores correlated
   against the *observed* composite outcome, bootstrapped for the go/no-go verdict, because this is
   the only comparison a real breeding programme, which never has a true breeding value to fall
@@ -265,6 +264,24 @@ against the real dataset's actual depth and missingness profile before trusting 
 over from this simulation. On this simulated input those settings leave half the loci without a
 dosage call, see [Known limitations](#known-limitations).
 
+Two further changes are needed if the real data is a **trial series rather than one experiment**,
+both required by the article's own Section 7.3 and neither implemented here, because this simulated
+population has a single environment:
+
+- **Compute the gate on across-environment genotype BLUPs, not per-environment means**, so that the
+  value being gated is the one the programme would actually select on. The article points to a
+  two-stage analysis developed for exactly the sparse, unevenly replicated design sweetpotato trial
+  series usually have as the route from raw plot data to those BLUPs.
+- **Partition the held-out set by environment or by year, never at random within the pooled
+  dataset.** Script 04 assigns folds at random (`sample(rep(seq_len(N_FOLDS), ...))`), which is
+  correct for one experiment but not for a pooled series: a random split leaves records from every
+  environment on both sides, so a model can reach the threshold by learning environment means
+  rather than genotype differences and the gate passes for the wrong reason.
+
+Section 7.3 also asks for the pooled estimate to be the primary gate with the per-environment
+values read as a dispersion check. None of this changes Table 5's thresholds; it changes what they
+are computed on.
+
 ## Known limitations
 
 - **Inheritance model** (script 01): random hexasomic (polysomic) segregation, in which each
@@ -290,12 +307,17 @@ dosage call, see [Known limitations](#known-limitations).
   scores, centred on 5, running from −1.5 to 13.4. This does not bias the comparison, which is
   scale-free and gives both methods the same phenotypes, but the file should not be reused as a
   realistic sweetpotato phenotype set.
-- **Parental read counts** (script 02): true parental dosage is not carried over from script 01, so
-  parent read counts are reconstructed from the population allele frequency rather than the
-  parents' own actual genotypes. A real dataset would genotype the actual parents directly.
-- **Trait architecture** (script 01): 40 QTL/trait (60 for Yield/Carotenoid and DryMatter/
-  StorageScore, which additionally share 20 QTL each with a controlled sign relationship, realised
-  at r = −0.37 and r = +0.32 respectively), additive-only, no dominance or epistasis. Heritability
+- **Parental read counts** (script 02): script 01 builds the two parents' dosage but does not save
+  it, so 02 reconstructs parent read counts from the population allele frequency rather than from
+  the parents' own genotypes. polyRAD's mapping pipeline is therefore given parents that are not
+  the cross's actual parents, which is one reason so many loci end up without a call. A real
+  dataset would genotype the actual parents directly, and a loader that supplies real parental
+  reads removes this limitation.
+- **Trait architecture** (script 01): 40 QTL/trait, plus 20 further shared QTL added to each of
+  Yield/Carotenoid and DryMatter/StorageScore with a controlled sign relationship, realised at
+  r = −0.37 and r = +0.32 respectively. That gives those four traits 60 effect entries each, and 58
+  to 60 distinct loci, because a shared index can coincide with a trait's own draw. Additive-only,
+  no dominance or epistasis. Heritability
   is targeted at h² = 0.40 on a genotype-mean basis, with the residual-noise scale accounting for
   the 2 field replicates being averaged (see script 01 for the formula), not derived from real
   sweetpotato trait-heritability estimates. The trade-off and association signs (Yield vs.
