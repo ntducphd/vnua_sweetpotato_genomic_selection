@@ -11,6 +11,8 @@ abstract: >-
   only the data-loading step needs to change once real genotyping data becomes available.
 type: software
 version: 1.0.0
+date-released: "2026-09-18"
+doi: "10.5281/zenodo.22822690"
 license: MIT
 repository-code: "https://github.com/ntducphd/vnua_sweetpotato_genomic_selection"
 authors:

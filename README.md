@@ -1,5 +1,7 @@
 # Stage-3 Dosage-Aware Genomic Selection for Sweetpotato
 
+[![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.22822689.svg)](https://doi.org/10.5281/zenodo.22822689)
+
 Reference R implementation of Stage 3 ("pilot dosage-aware genomic selection") from the staged,
 resource-gated AI-adoption roadmap proposed in:
 
@@ -294,6 +296,12 @@ If you use this code, please cite the article:
 > Loc. AI-assisted genomic selection in sweetpotato: A staged roadmap for polyploid,
 > clonal-propagated breeding. *Ecological Genetics and Genomics* 41 (2026) 100530.
 > https://doi.org/10.1016/j.egg.2026.100530
+
+To cite this software release specifically:
+
+> Nguyen Trung Duc, Pham Quang Tuan, Nguyen Thi Thu, Doan Thu Thuy, Vu Thi Xuan Binh, Nguyen Van
+> Loc. Stage-3 Dosage-Aware Genomic Selection Pipeline for Hexaploid Sweetpotato: Simulation-Validated
+> Reference Implementation (v1.0.0). Zenodo, 2026. https://doi.org/10.5281/zenodo.22822690
 
 Machine-readable metadata is in `CITATION.cff`.
 
