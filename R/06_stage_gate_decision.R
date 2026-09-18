@@ -17,9 +17,9 @@ set.seed(20260808)
 # access to and which is exactly known here because the population is simulated.
 # This is how simulation studies validate genomic-prediction pipelines, and it
 # avoids a construction artifact in option (B): MGIDI and the observed composite
-# are both near-linear combinations of the same five observed traits, so a high
-# correlation between them is close to a mathematical certainty rather than
-# evidence that MGIDI predicts breeding merit better than GBLUP. The noise
+# are both functions of the same five observed traits, so a correlation between
+# them partly reflects that shared construction rather than evidence that MGIDI
+# predicts breeding merit better than GBLUP. The noise
 # ceiling printed below is the observed composite's own correlation with the
 # true breeding value: a reference point for how much of the true signal
 # survives the phenotypic noise in this population, NOT a theoretical upper
