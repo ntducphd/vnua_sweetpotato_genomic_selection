@@ -11,7 +11,7 @@ set.seed(20260808)
 # Dosage-aware GBLUP genomic prediction, evaluated by five-fold
 # cross-validation, for all five simulated traits, so that the comparison
 # against the Stage-1 MGIDI index, itself a multi-trait composite, matches in
-# predictive scope. Table 5 allows two ways to make the Stage-1-vs-Stage-3
+# predictive scope. Section 7 sets out two ways to make the Stage-1-vs-Stage-3
 # comparison like-for-like: correlate both methods' scores against "a specific
 # target trait, or a pre-specified composite performance score computed
 # identically for every genotype." This script takes the composite route. Every

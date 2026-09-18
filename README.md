@@ -13,14 +13,13 @@ resource-gated AI-adoption roadmap proposed in:
 Sweetpotato (*Ipomoea batatas*, 2n = 6x = 90) is hexaploid, clonally propagated, and has almost no
 genomic-selection track record. The article's Table 5 (Section 7) identifies one existing
 feasibility study (Gemenet et al. 2020, *Theoretical and Applied Genetics* 133(12), 3345–3363) and
-sets an explicit, statistically rigorous go/no-go gate for when a breeding programme should trust
-genomic prediction over its existing classical multi-trait index. **No genotyping-by-sequencing data
-exists for the authors' own sweetpotato panel** (only phenotypic MGIDI data and SSR fingerprinting
-do). This repository is a complete, runnable pipeline validated end to end on a realistic simulated
-hexaploid population, so the gate logic and every upstream method (dosage-uncertain genotype
-calling, polyploid relationship-matrix construction, dosage-aware GBLUP, bootstrap-CI gate testing)
-are ready to use as-is the moment real genotyping data becomes available; only the data-loading
-step changes.
+sets an explicit, provisional go/no-go gate for when a breeding programme should trust genomic
+prediction over its existing classical multi-trait index. No genotyping-by-sequencing data yet
+exists for the authors' own sweetpotato panel (only phenotypic MGIDI data and SSR fingerprinting
+do). This repository validates the pipeline end to end on a realistic simulated hexaploid
+population, so the gate logic and every upstream method (dosage-uncertain genotype calling,
+polyploid relationship-matrix construction, dosage-aware GBLUP, bootstrap-CI gate testing) run
+unchanged the moment real genotyping data becomes available; only the data-loading step changes.
 
 ## What this workflow does
 
@@ -49,22 +48,21 @@ step changes.
    recovers real genetic signal rather than an artifact of how the composite scores are built; and
    (B) **Table 5's literal operational gate**, both methods' scores correlated against the
    *observed* composite outcome (the only thing a real programme ever has), bootstrapped for a 95%
-   CI on the accuracy difference, verdict = **GO** only if the CI excludes zero. See
-   [Two-tier validation](#two-tier-validation-why-two-numbers) below for why both are reported.
+   CI on the accuracy difference, verdict = **GO** only if the CI excludes zero. Both comparisons
+   are defined under [Two-tier validation](#two-tier-validation).
 7. **Render a diagnostic figure** summarising both validations
-   (`figures/Fig_stage3_gate_diagnostic.png`). This figure belongs to the repository; it is not one
-   of the article's figures.
+   (`figures/Fig_stage3_gate_diagnostic.png`), a repository figure rather than one of the
+   article's.
 
 The method, criteria and thresholds are set out in full in the article's Table 5 and its
 surrounding Section 7 text; this repository is the executable version of that description.
 
-## Two-tier validation: why two numbers
+## Two-tier validation
 
 Stage-3 GBLUP and the Stage-1 MGIDI index are scored on the same five traits and compared against
 the same shared outcome, in the comparison mode Section 7 specifies: "a specific target trait, or a
-pre-specified composite performance score computed identically for every genotype". Two different
-targets are available in a simulated population, and this repository reports both, because they
-answer different questions.
+pre-specified composite performance score computed identically for every genotype". Two targets are
+available in a simulated population, and both are reported.
 
 MGIDI and a composite built by standardising each observed trait and averaging are both near-linear
 combinations of the same five observed traits. A high correlation between them is therefore close
@@ -73,12 +71,12 @@ states this construction pitfall. The simulation makes a cleaner target availabl
 true, noise-free breeding value, which no real breeding programme ever has.
 
 - **(A) Oracle validation** (`06`, panel A of the figure): both methods' scores correlated against
-  the TRUE simulated breeding value. This is the artifact-free check that the pipeline mechanics
-  recover real genetic signal. **GBLUP 0.664 vs. MGIDI 0.441**, both below the **0.668** noise
-  ceiling (the observed composite's own correlation with the true value); the 95% CI on the
-  difference, **[0.117, 0.335], excludes zero**. With a negative genetic trade-off present
-  (Yield/Carotenoid true breeding-value correlation r = −0.37), marker-based prediction
-  outperforms a phenotype-only classical index on this population.
+  the TRUE simulated breeding value, a target free of the construction pitfall above. **GBLUP 0.664
+  vs. MGIDI 0.441**, both below the **0.668** noise ceiling (the observed composite's own
+  correlation with the true value); the 95% CI on the difference, **[0.117, 0.335], excludes
+  zero**. With a negative genetic trade-off present (Yield/Carotenoid true breeding-value
+  correlation r = −0.37), marker-based prediction outperforms a phenotype-only classical index on
+  this population.
 - **(B) Table 5's literal operational gate** (`06`, panel B): both methods' scores correlated
   against the *observed* composite outcome, bootstrapped for the go/no-go verdict, because this is
   the only comparison a real breeding programme, which never has a true breeding value to fall
@@ -87,11 +85,11 @@ true, noise-free breeding value, which no real breeding programme ever has.
   mechanism to score a genotype blind to its own data the way GBLUP's held-out-fold prediction
   can, so this number favours MGIDI beyond genuine predictive skill.
 
-Read together, (A) and (B) are the practical lesson the article draws in Section 7: a real,
+(A) and (B) together are the practical lesson the article draws in Section 7: a real,
 statistically detectable advantage for genomic prediction exists in these data, while the
 operational test a resource-limited programme can actually run, on noisy observed phenotypes and
-with MGIDI's in-sample advantage, cannot confirm it at this population size. That gap is the
-Type-II-error risk Table 5's own text warns a small validation set could create.
+with MGIDI's in-sample advantage, cannot confirm it at this population size. That gap is a concrete
+case of the validation-set power limitation Table 5's own text warns about.
 
 The article states both comparisons qualitatively (Section 7 and the Fig. 1 caption); the numeric
 values above are this repository's own output on the committed simulated population, reproducible
@@ -107,7 +105,7 @@ with the scripts in `R/`.
 | polyRAD dosage-calling pipeline | Real tool, real API, run on simulated read counts |
 | AGHmatrix G-matrix construction | Real tool/method (VanRaden, polyploid-extended), run on simulated dosage |
 | sommer GBLUP + cross-validation | Real tool/method, run on simulated data |
-| metan/MGIDI Stage-1 baseline | The same real method as the authors' companion germplasm workflow, applied here for a fair Stage-1-vs-Stage-3 comparison |
+| metan/MGIDI Stage-1 baseline | The same method as the authors' companion germplasm workflow, matched in scope to the Stage-3 composite |
 | Bootstrap gate decision | Real statistical procedure, implements Table 5's literal wording |
 
 Every method and tool is used exactly as it would be on a real dataset; only the input
@@ -124,19 +122,18 @@ or breeding-value predictability.
 | Precedent tool family for dosage-aware prediction: polyGBLUP-family models | `R/03_qc_relationship_matrix.R` + `R/04_gblup_cross_validation.R` |
 | Gate: prediction accuracy exceeds the Stage-1 classical-index ranking on a held-out validation subset, with the improvement's confidence interval excluding zero | `R/06_stage_gate_decision.R`: 10,000-resample bootstrap, 95% CI on (GBLUP − Stage-1) accuracy; verdict = GO only if the CI's lower bound > 0 |
 
-Run on the committed simulated population (see [Two-tier validation](#two-tier-validation-why-two-numbers)
-above for why two comparisons are reported):
+Run on the committed simulated population (see [Two-tier validation](#two-tier-validation) above):
 
 - **Oracle validation** (vs. TRUE breeding value): GBLUP 0.664 vs. Stage-1 0.441, 95% CI on the
   difference **[0.117, 0.335]**, excludes zero; genomic prediction is detectably better here, both
   below the 0.668 noise ceiling.
 - **Table 5's literal gate** (vs. observed composite): GBLUP 0.482 vs. Stage-1 0.561, 95% CI
-  **[−0.180, 0.022]**, spans zero, **NO-GO (not distinguishable)**, read alongside the caveat that
-  MGIDI is not held out in this comparison (above). The contrast with the oracle result is the
-  point: a real, detectable advantage that the operational, noise-limited test still cannot confirm.
+  **[−0.180, 0.022]**, spans zero, **NO-GO (not distinguishable)**, with the caveat that MGIDI is
+  not held out in this comparison (above). The oracle comparison detects an advantage that this
+  operational, noise-limited test does not.
 
-Both are visualised in `figures/Fig_stage3_gate_diagnostic.png`. Neither should be read as a claim
-about real sweetpotato breeding-value predictability; see [Known limitations](#known-limitations).
+Both are visualised in `figures/Fig_stage3_gate_diagnostic.png`. Neither is a claim about real
+sweetpotato breeding-value predictability; see [Known limitations](#known-limitations).
 
 ## Repository structure
 
@@ -158,10 +155,9 @@ inspected without running R, but every file in all three is fully reproducible v
 ## Requirements
 
 - **R ≥ 4.5** (developed and tested on R 4.5.1)
-- Run on **Windows via PowerShell, not Git Bash**. `Rscript` under Git Bash/MSYS2 is confirmed to
-  segfault on the SVD-family linear algebra that AGHmatrix's G-matrix construction and sommer's
-  mixed-model fitting rely on internally. Not an issue on macOS/Linux or native Windows
-  PowerShell/cmd.
+- Run on **Windows via PowerShell, not Git Bash**. `Rscript` under Git Bash/MSYS2 segfaults on the
+  SVD-family linear algebra that AGHmatrix's G-matrix construction and sommer's mixed-model fitting
+  rely on internally. Not an issue on macOS/Linux or native Windows PowerShell/cmd.
 - R packages (exact versions used for the results in this repository, see
   `environment/R_package_versions.csv`):
 
@@ -202,12 +198,12 @@ Rscript R/run_all.R        # from the repository root
 ```
 
 This runs all 7 scripts in order, each in its own fresh `Rscript` subprocess, and reports which (if
-any) fail. The whole pipeline takes under a minute on a desktop CPU.
+any) fail.
+
 The pipeline is deterministic: scripts 01, 02, 04 and 06 set a fixed seed and scripts 03, 05 and 07
-draw no random numbers, so a clean run regenerates every committed CSV and `.rds` byte for byte. The
-one exception is `figures/Fig_stage3_gate_diagnostic.pdf`, which embeds a creation timestamp in its
-document metadata and therefore never byte-matches across runs even when every plotted value is
-identical.
+draw no random numbers, so a clean run regenerates every committed CSV and `.rds` byte for byte.
+`figures/Fig_stage3_gate_diagnostic.pdf` embeds a creation timestamp in its document metadata, so
+it does not byte-match across runs.
 
 Scripts can also be run individually, in order (01 to 07); each reads the previous stage's saved
 `.rds` output from `../data_simulated/` or `../outputs/`.
@@ -245,11 +241,12 @@ simulation.
 
 ## Known limitations
 
-- **Inheritance model** (script 01): random hexasomic (polysomic) segregation, in which each parent's 6
-  homologous copies at a linkage group are equally likely to be inherited, no preferential pairing,
-  no within-linkage-group recombination. Real sweetpotato meiosis "does not fit auto- or
-  allopolyploid models cleanly" (Gao et al. 2020, *PLoS ONE* 15(3), e0229624), so this simulator
-  validates pipeline *mechanics*, not real sweetpotato transmission genetics.
+- **Inheritance model** (script 01): random hexasomic (polysomic) segregation, in which each
+  parent's 6 homologous copies at a linkage group are equally likely to be inherited, with no
+  preferential pairing and no within-linkage-group recombination. The article records that real
+  sweetpotato meiotic behaviour "does not fit auto- or allopolyploid models cleanly" (Table 2; Gao
+  et al. 2020, *PLoS ONE* 15(3), e0229624), so this simulator validates pipeline *mechanics*, not
+  real sweetpotato transmission genetics.
 - **Parental read counts** (script 02): true parental dosage is not carried over from script 01, so
   parent read counts are reconstructed from the population allele frequency rather than the
   parents' own actual genotypes. A real dataset would genotype the actual parents directly.
@@ -263,9 +260,9 @@ simulation.
   by the β-carotene/starch trade-off reported by Gemenet et al. (2020, *Theor. Appl. Genet.* 133(1),
   23–36) and catalogued in Table 1 of the article, not a claim about the real magnitude or even
   direction of these relationships in sweetpotato.
-- **Stage-1/Stage-3 in-sample asymmetry in comparison (B)** (see script 06's own comments and the
-  [Two-tier validation](#two-tier-validation-why-two-numbers) section above): MGIDI is computed once
-  on the full observed dataset, since it has no mechanism to extrapolate to a genotype it was not given
+- **Stage-1/Stage-3 in-sample asymmetry in comparison (B)** (see scripts 05 and 06, and the
+  [Two-tier validation](#two-tier-validation) section above): MGIDI is computed once on the full
+  observed dataset, since it has no mechanism to extrapolate to a genotype it was not given
   phenotypes for, and `metan::mgidi()` exposes no built-in way to score a genotype "blind" to its
   own data the way GBLUP's held-out-fold prediction can. Comparison (A), the oracle validation
   against the true breeding value, does not have this problem (both methods' scores are computed the
@@ -277,8 +274,7 @@ simulation.
   mechanically into a composite score, rather than a single joint mixed model with an estimated
   cross-trait genetic covariance structure. A true multi-trait GBLUP would let traits borrow
   statistical strength from each other's genetic correlations and is a natural next refinement; the
-  univariate-then-combine design used here keeps the two methods' predictive scope matched, which is
-  what the Stage-1-vs-Stage-3 comparison requires.
+  univariate-then-combine design used here keeps the two methods' predictive scope matched.
 - **GBLUP fitted on genotype-mean phenotypes, not raw plot-level records** (script 04): a standard
   two-step approach (collapse the 2 replicates to a genotype mean first, then fit the genomic
   model), matching the same simplification 05's MGIDI baseline makes by construction. A one-step

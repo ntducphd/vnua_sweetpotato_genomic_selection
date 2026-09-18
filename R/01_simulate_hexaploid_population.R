@@ -136,7 +136,7 @@ colnames(breeding_value) <- TRAITS
 # Ve_plot itself, so the plot-level formula would inflate the realised
 # genotype-mean h2. Solving h2_mean = Vg / (Vg + Ve_plot/N_REPS) = H2_TARGET
 # for the plot-level residual SD gives the sqrt(N_REPS) correction factor
-# below; gamem()'s own realised h2 output confirms the target is met.
+# below; gamem() reports the realised genotype-mean h2 for each trait.
 geno_sd_target <- c(Yield = 8, DryMatter = 3, Carotenoid = 5,
                     RootShapeScore = 1.2, StorageScore = 1.0)
 plot_raw <- expand.grid(GEN = rownames(breeding_value), REP = seq_len(N_REPS)) %>%

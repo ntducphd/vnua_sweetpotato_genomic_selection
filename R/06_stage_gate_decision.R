@@ -116,8 +116,8 @@ verdict <- if (ci[1] > 0) {
   "NO-GO (improvement not distinguishable from zero; CI spans zero)"
 }
 cat(sprintf("\nTable 5 Stage-3 literal gate verdict: %s\n", verdict))
-cat("(Read alongside (A): the oracle comparison above is the artifact-free check that the\n")
-cat(" pipeline itself is recovering real signal; this gate is what Table 5 asks a real\n")
+cat("((A) above, the oracle comparison, is the artifact-free check that the pipeline\n")
+cat(" itself is recovering real signal; this gate is what Table 5 asks a real\n")
 cat(" programme, which never has a true breeding value, to compute operationally.)\n")
 
 # 07. Write output -----------------------------------------------------------------

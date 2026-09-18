@@ -25,16 +25,15 @@ libraries('metan', 'dplyr')
 # the same shared observed outcome (05's composite_observed, computed the same
 # way as 04's and evaluated for both methods at the same held-out individuals
 # GBLUP's folds use). MGIDI's score for those individuals was informed by their
-# own observed data; GBLUP's prediction for its held-out fold was not. Table 5
-# sets out this comparison logic, and Section 7 of the article discusses the
-# asymmetry.
+# own observed data; GBLUP's prediction for its held-out fold was not. Section 7
+# of the article sets out this comparison logic and discusses the asymmetry.
 #
 # Scope matching: MGIDI is a 5-trait composite index, so 04 runs GBLUP across
 # all five traits and combines them into a composite score with the same
 # standardise-then-average formula used here. Both methods are therefore
 # evaluated against the same multi-trait composite outcome, the "pre-specified
 # composite performance score computed identically for every genotype"
-# comparison mode Table 5 allows.
+# comparison mode Section 7 allows.
 #
 # Representation matching: metan::mgidi() defaults to use_data = "blup", so
 # MGIDI's ideotype-distance is computed from gamem()'s BLUP-shrunk genotype
