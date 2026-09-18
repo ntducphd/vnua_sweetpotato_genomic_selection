@@ -19,12 +19,16 @@ set.seed(20260808)
 # avoids a construction artifact in option (B): MGIDI and the observed composite
 # are both near-linear combinations of the same five observed traits, so a high
 # correlation between them is close to a mathematical certainty rather than
-# evidence that MGIDI predicts breeding merit better than GBLUP. The observed
-# composite's own correlation with the true breeding value, the noise ceiling
-# printed below, bounds what any method can reach against that target. Against
-# the true breeding value the two methods separate: GBLUP's accuracy exceeds
-# MGIDI's and the bootstrap CI on the difference excludes zero (values printed
-# below).
+# evidence that MGIDI predicts breeding merit better than GBLUP. The noise
+# ceiling printed below is the observed composite's own correlation with the
+# true breeding value: a reference point for how much of the true signal
+# survives the phenotypic noise in this population, NOT a theoretical upper
+# bound. A predictor that borrows information across relatives or traits can in
+# principle exceed it, and on this population the equal-weight observed
+# composite (0.668) in fact edges out the out-of-fold GBLUP composite (0.664).
+# Against the true breeding value the two methods still separate clearly:
+# GBLUP's accuracy exceeds MGIDI's and the bootstrap CI on the difference
+# excludes zero (values printed below).
 #
 # (B) Table 5's literal operational gate. The bootstrap-CI test as Table 5
 # specifies it for real deployment, where no true breeding value is available:
@@ -74,7 +78,7 @@ noise_ceiling     <- cor(cmp$Composite_Observed, cmp$Composite_TrueBV)
 cat("=== (A) Oracle validation (simulation only, vs. TRUE breeding value) ===\n")
 cat(sprintf("GBLUP (composite, out-of-fold) accuracy:  %.3f\n", acc_gblup_oracle))
 cat(sprintf("Stage-1 (MGIDI) accuracy:                 %.3f\n", acc_stage1_oracle))
-cat(sprintf("Noise ceiling (observed composite itself): %.3f  (upper bound any noisy-phenotype-based method could reach)\n",
+cat(sprintf("Noise ceiling (observed composite itself): %.3f  (how much true signal survives this population's phenotypic noise; a reference point, not a theoretical bound)\n",
             noise_ceiling))
 cat(sprintf("Difference (GBLUP - Stage-1): %.3f\n\n", acc_gblup_oracle - acc_stage1_oracle))
 

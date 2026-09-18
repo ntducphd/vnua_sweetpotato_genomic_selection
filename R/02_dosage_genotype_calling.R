@@ -107,13 +107,20 @@ rad <- SetRecurrentParent(rad, "parent2")
 # FALSE because locTable$Pos here is an arbitrary marker index rather than a
 # physical or genetic map position, so linkage-based prior updating is not
 # meaningful with these placeholder coordinates.
-# freqAllowedDeviation is set to 0.01 instead of the 0.05 default.
-# PipelineMapping2Parents builds its expected-frequency grid as
-# seq(0, 1, length.out = (pld.donor + pld.recurrent) * max(ploidy)/2 + 1); for
-# two hexaploid (ploidy 6) parents that is (6+6)*6/2 + 1 = 37 points, i.e. steps
-# of 1/36 (~0.0278), against 5 points and steps of 0.25 in the diploid case the
-# 0.05 default is tuned for. Half the minimum gap is ~0.0139, so
-# freqAllowedDeviation must sit below that.
+# freqAllowedDeviation is set to 0.01 instead of the 0.05 default, because the
+# default is too large for this grid and PipelineMapping2Parents stops with
+# "allowedDeviation is too large given intervals within expectedFreqs".
+# The grid is built as
+#   allelesin <- (pld.don + pld.rec) * pld.max / 2
+#   possfreq  <- seq(0, 1, length.out = (n.gen.backcrossing + 1) * allelesin + 1)
+# where pld.don and pld.rec are the two parents' taxaPloidy and pld.max is
+# max(sum(possiblePloidies)). Here that is (2 + 2) * 6 / 2 = 12, so 13 grid
+# points with a spacing of 1/12 (about 0.0833) and an upper limit of half that
+# spacing, 1/24 (about 0.0417). 0.01 therefore sits well inside the limit; it is
+# about four times tighter than necessary, and that choice has a cost, recorded
+# in section 09 below and in README's Known limitations: the tighter the
+# tolerance, the more loci whose observed allele frequency matches no expected
+# mapping frequency and are left without any dosage call.
 rad <- PipelineMapping2Parents(
   rad,
   n.gen.backcrossing  = 0,
@@ -137,11 +144,26 @@ est_dosage <- t(wmg[progeny_rows, alt_cols, drop = FALSE])
 rownames(est_dosage) <- sub("_alt$", "", rownames(est_dosage))
 est_dosage <- est_dosage[marker_id, , drop = FALSE]
 
-# 09. Sanity-check estimated dosage against the ground truth (diagnostic only) ---
+# 09. Call rate, then sanity-check the called dosage against the ground truth ------
+# The call rate is reported first and explicitly, because the correlation below
+# is computed only over cells polyRAD actually called and would otherwise read
+# as if every locus had been genotyped. Loci left uncalled here are removed
+# later by 03's missing-rate filter, so this is where that loss originates.
+uncalled_alt  <- sum(rowMeans(is.na(est_dosage)) == 1)
+wmg_progeny   <- wmg[progeny_rows, , drop = FALSE]
+uncalled_both <- sum(colMeans(is.na(wmg_progeny[, paste0(marker_id, "_ref"), drop = FALSE])) == 1 &
+                     colMeans(is.na(wmg_progeny[, paste0(marker_id, "_alt"), drop = FALSE])) == 1)
+cat(sprintf("Call rate: %d / %d loci uncalled for BOTH alleles; %d more called only on the\n",
+            uncalled_both, nrow(est_dosage), uncalled_alt - uncalled_both))
+cat(sprintf(" reference allele, so %d / %d markers (%.1f%% of cells) leave this script with no\n",
+            uncalled_alt, nrow(est_dosage), 100 * mean(is.na(est_dosage))))
+cat(" alt-allele dosage at all. See the freqAllowedDeviation note in section 07.\n")
+
 common_progeny <- intersect(colnames(est_dosage), colnames(progeny_dosage))
 r_check <- cor(as.vector(est_dosage[, common_progeny]),
                as.vector(progeny_dosage[, common_progeny]), use = "complete.obs")
-cat(sprintf("polyRAD estimated vs. true simulated dosage, marker-wise correlation: %.3f\n", r_check))
+cat(sprintf("polyRAD estimated vs. true simulated dosage, marker-wise correlation over the\n"))
+cat(sprintf(" CALLED cells only: %.3f\n", r_check))
 cat("(expected well below 1.0; this is the dosage uncertainty the article\n")
 cat(" discusses. A value close to 0 would indicate a calling problem rather\n")
 cat(" than noise.)\n")

@@ -19,24 +19,28 @@ attached base packages:
 [1] stats     graphics  grDevices utils     datasets  methods   base     
 
 other attached packages:
- [1] patchwork_1.3.2 ggplot2_4.0.3   purrr_1.2.2     tidyr_1.3.2    
- [5] dplyr_1.2.1     metan_1.19.0    sommer_4.4.6    enhancer_1.1.1 
- [9] crayon_1.5.3    MASS_7.3-66     Matrix_1.7-6    AGHmatrix_3.0.1
-[13] polyRAD_2.0.1  
+ [1] patchwork_1.3.2    ggplot2_4.0.3      metan_1.19.0       sommer_4.4.6      
+ [5] enhancer_1.1.1     crayon_1.5.3       MASS_7.3-66        Matrix_1.7-6      
+ [9] AGHmatrix_3.0.1    polyRAD_2.0.1      purrr_1.2.2        tidyr_1.3.2       
+[13] dplyr_1.2.1        easypackages_0.1.0
 
 loaded via a namespace (and not attached):
- [1] generics_0.1.4      stringi_1.8.7       lattice_0.22-9     
- [4] lme4_2.0-6          magrittr_2.0.5      grid_4.5.1         
- [7] RColorBrewer_1.1-3  ggrepel_0.9.8       GGally_2.4.0       
-[10] scales_1.4.0        tweenr_2.0.3        numDeriv_2016.8-1.1
-[13] reformulas_0.4.4    Rdpack_2.6.6        cli_3.6.6          
-[16] rlang_1.3.0         polyclip_1.10-7     rbibutils_2.4.1    
-[19] splines_4.5.1       withr_3.0.3         tools_4.5.1        
-[22] nloptr_2.2.1        minqa_1.2.8         mathjaxr_2.0-0     
-[25] fastmatch_1.1-8     boot_1.3-32         ggstats_0.13.0     
-[28] vctrs_0.7.3         R6_2.6.1            matrixStats_1.5.0  
-[31] lifecycle_1.0.5     pkgconfig_2.0.3     lmerTest_3.2-1     
-[34] pillar_1.11.1       gtable_0.3.6        glue_1.8.1         
-[37] Rcpp_1.1.2          ggforce_0.5.0       tibble_3.3.1       
-[40] tidyselect_1.2.1    farver_2.1.2        nlme_3.1-170       
-[43] compiler_4.5.1      S7_0.2.2           
+ [1] fastmatch_1.1-8     gtable_0.3.6        devtools_2.5.2     
+ [4] ggrepel_0.9.8       GGally_2.4.0        lattice_0.22-9     
+ [7] numDeriv_2016.8-1.1 mathjaxr_2.0-0      vctrs_0.7.3        
+[10] tools_4.5.1         Rdpack_2.6.6        generics_0.1.4     
+[13] tibble_3.3.1        pkgconfig_2.0.3     RColorBrewer_1.1-3 
+[16] S7_0.2.2            assertthat_0.2.1    lifecycle_1.0.5    
+[19] compiler_4.5.1      farver_2.1.2        ggforce_0.5.0      
+[22] lmerTest_3.2-1      usethis_3.2.1       pillar_1.11.1      
+[25] nloptr_2.2.1        ellipsis_0.3.3      cachem_1.1.0       
+[28] reformulas_0.4.4    sessioninfo_1.2.4   boot_1.3-32        
+[31] nlme_3.1-170        ggstats_0.13.0      tidyselect_1.2.1   
+[34] stringi_1.8.7       splines_4.5.1       polyclip_1.10-7    
+[37] fastmap_1.2.0       grid_4.5.1          cli_3.6.6          
+[40] magrittr_2.0.5      pkgbuild_1.4.8      withr_3.0.3        
+[43] scales_1.4.0        matrixStats_1.5.0   lme4_2.0-6         
+[46] memoise_2.0.1       rbibutils_2.4.1     rlang_1.3.0        
+[49] Rcpp_1.1.2          glue_1.8.1          tweenr_2.0.3       
+[52] pkgload_1.5.3       minqa_1.2.8         R6_2.6.1           
+[55] fs_2.1.0           

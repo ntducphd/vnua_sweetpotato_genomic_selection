@@ -27,10 +27,10 @@ unchanged the moment real genotyping data becomes available; only the data-loadi
    one existing feasibility study, Gemenet et al. 2020), with a realistic multi-trait (5-trait) QTL
    architecture.
 2. **Call dosage genotypes** from simulated noisy GBS read counts using
-   [polyRAD](https://github.com/lvclark/polyRAD) (Clark, Lipka & Sacks 2019, *G3* 9(3), 663-673),
+   [polyRAD](https://github.com/lvclark/polyRAD) (Clark, Lipka & Sacks 2019, *G3* 9(3), 663–673),
    the precedent tool the article cites for this step.
 3. **Build a hexaploid genomic relationship (G) matrix** with
-   [AGHmatrix](https://github.com/prmunoz/AGHmatrix)'s polyploid-extended VanRaden method, after QC
+   [AGHmatrix](https://github.com/rramadeu/AGHmatrix)'s polyploid-extended VanRaden method, after QC
    filtering and a duplicate/identity check, the genomic-marker analogue of the SSR-fingerprinting
    congruence check in the authors' companion germplasm workflow
    ([vnua_sweetpotato_improvement](https://github.com/ntducphd/vnua_sweetpotato_improvement)).
@@ -39,7 +39,7 @@ unchanged the moment real genotyping data becomes available; only the data-loadi
    five out-of-fold GEBVs per genotype into one composite predicted-merit score (standardise each
    trait, then average). All five traits are used, matched in scope to the Stage-1 index below.
 5. **Compute the Stage-1 classical baseline** (MGIDI, via
-   [metan](https://github.com/TiagoOlivoto/metan)) on the identical simulated phenotype data, the
+   [metan](https://github.com/nepem-ufsc/metan)) on the identical simulated phenotype data, the
    same MGIDI method the authors' companion germplasm workflow uses, and combine the same five
    observed traits into a composite *observed* score with the identical standardise-then-average
    formula.
@@ -64,16 +64,19 @@ the same shared outcome, in the comparison mode Section 7 specifies: "a specific
 pre-specified composite performance score computed identically for every genotype". Two targets are
 available in a simulated population, and both are reported.
 
-MGIDI and a composite built by standardising each observed trait and averaging are both near-linear
-combinations of the same five observed traits. A high correlation between them is therefore close
-to a mathematical certainty and says little about predictive skill. Section 7 of the article
-states this construction pitfall. The simulation makes a cleaner target available: the
-true, noise-free breeding value, which no real breeding programme ever has.
+MGIDI and a composite built by standardising each observed trait and averaging are both functions
+of the same five observed traits, so a correlation between them partly reflects that shared
+construction rather than predictive skill. Section 7 of the article describes this pitfall. The
+simulation makes a cleaner target available: the true, noise-free breeding value, which no real
+breeding programme ever has.
 
 - **(A) Oracle validation** (`06`, panel A of the figure): both methods' scores correlated against
   the TRUE simulated breeding value, a target free of the construction pitfall above. **GBLUP 0.664
-  vs. MGIDI 0.441**, both below the **0.668** noise ceiling (the observed composite's own
-  correlation with the true value); the 95% CI on the difference, **[0.117, 0.335], excludes
+  vs. MGIDI 0.441**, both below the **0.668** noise ceiling. That ceiling is the observed
+  composite's own correlation with the true value, a measure of how much true signal survives this
+  population's phenotypic noise, not a theoretical bound: the equal-weight observed composite in
+  fact edges out the out-of-fold GBLUP composite here. The 95% CI on the difference between the two
+  methods, **[0.117, 0.335], excludes
   zero**. With a negative genetic trade-off present (Yield/Carotenoid true breeding-value
   correlation r = −0.37), marker-based prediction outperforms a phenotype-only classical index on
   this population.
@@ -108,10 +111,16 @@ with the scripts in `R/`.
 | metan/MGIDI Stage-1 baseline | The same method as the authors' companion germplasm workflow, matched in scope to the Stage-3 composite |
 | Bootstrap gate decision | Real statistical procedure, implements Table 5's literal wording |
 
-Every method and tool is used exactly as it would be on a real dataset; only the input
-genotypes and phenotypes are synthetic. Reported numbers (dosage-calling accuracy, cross-validation
-accuracy, gate verdict) are pipeline-validation figures, not claims about real sweetpotato genetics
-or breeding-value predictability.
+Every method and tool is the real implementation called through its public API; only the input
+genotypes and phenotypes are synthetic. Three settings in script 02 are specific to this simulated
+input and would be revisited on real data: `taxaPloidy = 2` alongside `possiblePloidies = list(6)`
+to reach polyRAD's effective ploidy of 6, `useLinkage = FALSE` because the marker positions are
+arbitrary indices rather than a real map, and parental read counts reconstructed from the
+population allele frequency rather than from the parents' own genotypes.
+
+Reported numbers (dosage-calling accuracy over the called cells, cross-validation accuracy, gate
+verdict) are pipeline-validation figures, not claims about real sweetpotato genetics or
+breeding-value predictability.
 
 ## Table 5 correspondence
 
@@ -119,7 +128,8 @@ or breeding-value predictability.
 |---|---|
 | Entry requirement: one biparental population, deep/accurate genotyping (benchmark: 315 progeny in the one existing feasibility study) | `R/01_simulate_hexaploid_population.R` |
 | Precedent tool for dosage-uncertain genotype calling: polyRAD (Clark et al. 2019) | `R/02_dosage_genotype_calling.R` |
-| Precedent tool family for dosage-aware prediction: polyGBLUP-family models | `R/03_qc_relationship_matrix.R` + `R/04_gblup_cross_validation.R` |
+| Method: pilot dosage-aware genomic selection | `R/03_qc_relationship_matrix.R` + `R/04_gblup_cross_validation.R` |
+| Precedent, third entry: linkage analysis and haplotype phasing for high-ploidy populations (Mollinari & Garcia 2019) | **Not implemented.** Script 02 runs `useLinkage = FALSE`, because the simulated marker positions are arbitrary indices rather than a genetic or physical map |
 | Gate: prediction accuracy exceeds the Stage-1 classical-index ranking on a held-out validation subset, with the improvement's confidence interval excluding zero | `R/06_stage_gate_decision.R`: 10,000-resample bootstrap, 95% CI on (GBLUP − Stage-1) accuracy; verdict = GO only if the CI's lower bound > 0 |
 
 Run on the committed simulated population (see [Two-tier validation](#two-tier-validation) above):
@@ -179,6 +189,7 @@ inspected without running R, but every file in all three is fully reproducible v
   above. To reproduce the committed results exactly, install the pinned versions of the four
   analysis packages:
   ```r
+  install.packages("remotes")
   remotes::install_version("polyRAD",   "2.0.1")
   remotes::install_version("AGHmatrix", "3.0.1")
   remotes::install_version("sommer",    "4.4.6")
@@ -186,7 +197,8 @@ inspected without running R, but every file in all three is fully reproducible v
   ```
 
 Full session details (platform, locale, complete dependency tree) are recorded in
-`environment/R_sessionInfo.txt`.
+`environment/R_sessionInfo.txt`, captured from a session that attaches every package the seven
+scripts attach, in the order they attach them.
 
 ## How to reproduce
 
@@ -205,8 +217,12 @@ draw no random numbers, so a clean run regenerates every committed CSV and `.rds
 `figures/Fig_stage3_gate_diagnostic.pdf` embeds a creation timestamp in its document metadata, so
 it does not byte-match across runs.
 
-Scripts can also be run individually, in order (01 to 07); each reads the previous stage's saved
-`.rds` output from `../data_simulated/` or `../outputs/`.
+Scripts can also be run individually, in order (01 to 07), **from inside the `R/` directory**: each
+reads what the earlier stages wrote to `../data_simulated/` or `../outputs/`. Most of those inputs
+are `.rds`; scripts 04 and 05 both read `data_simulated/plot_level_phenotypes.csv`, which script 01
+writes. Run them from `R/` and not from the repository root, because the paths are relative to the
+working directory and from the root they resolve outside the clone. `run_all.R` is safe either way:
+it sets its own working directory first.
 
 ## Script → output map
 
@@ -214,7 +230,7 @@ Scripts can also be run individually, in order (01 to 07); each reads the previo
 |---|---|---|
 | `01_simulate_hexaploid_population.R` | `data_simulated/progeny_dosage_matrix.rds`, `marker_map.rds`, `plot_level_phenotypes.csv`, `true_qtl_effects.rds`, `true_breeding_value_matrix.rds` | 315-progeny biparental hexaploid population, hexasomic segregation, 5-trait QTL-driven phenotypes, plus the pre-noise true breeding value (simulation ground truth, for oracle validation only) |
 | `02_dosage_genotype_calling.R` | `data_simulated/estimated_dosage_matrix.rds` | polyRAD dosage calling from simulated GBS read counts |
-| `03_qc_relationship_matrix.R` | `data_simulated/dosage_qc.rds`, `G_matrix_hexaploid.rds` | Missing-rate (≤ 20%) and MAF (≥ 0.05) filtering, duplicate check, AGHmatrix hexaploid G-matrix. On the committed simulated population this retains 683 of 1,500 markers, and the G-matrix is built on those 683 |
+| `03_qc_relationship_matrix.R` | `data_simulated/dosage_qc.rds`, `G_matrix_hexaploid.rds` | Missing-rate (≤ 20%) and MAF (≥ 0.05) filtering, marker-centred duplicate/identity check, AGHmatrix hexaploid G-matrix. On the committed simulated population this retains 683 of 1,500 markers, and the G-matrix is built on those 683. The reduction is driven by polyRAD's call rate rather than by MAF filtering, see [Known limitations](#known-limitations) |
 | `04_gblup_cross_validation.R` | `outputs/gblup_cv_results.rds`, `gblup_cv_accuracy_by_fold.csv` | sommer dosage-aware GBLUP, all 5 traits, one shared 5-fold assignment (25 fits, convergence checked and reported), out-of-fold composite score |
 | `05_stage1_classical_baseline.R` | `outputs/stage1_mgidi_results.rds`, `stage1_mgidi_scores.csv` | metan/MGIDI baseline on the same simulated phenotypes, correlated against the shared observed composite |
 | `06_stage_gate_decision.R` | `outputs/stage_gate_decision.rds`, `stage_gate_comparison_table.csv` | Two-tier validation: (A) oracle accuracy vs. TRUE breeding value; (B) Table 5's literal bootstrap-CI gate vs. observed composite |
@@ -222,22 +238,32 @@ Scripts can also be run individually, in order (01 to 07); each reads the previo
 
 ## Swapping in real GBS data
 
-Once real genotyping data exists for the sweetpotato panel, replace scripts 01–02 with a loader
-that produces the same two inputs script 03 expects:
+Once real genotyping data exists for the sweetpotato panel, replace script 01's simulation with a
+loader that supplies three inputs:
 
 1. **Reference/alternate read-depth counts** (or already-called dosage) for polyRAD
    (script 02's `RADdata()` call). A real GBS pipeline (e.g. TASSEL-GBS, Stacks) produces these in
-   the same taxa × allele shape. Skip script 01 entirely; skip script 02's synthetic read-count
-   simulation but keep its `RADdata()` → `SetDonorParent()`/`SetRecurrentParent()` →
-   `PipelineMapping2Parents()` → `GetWeightedMeanGenotypes()` structure, pointed at the real reads.
-2. **`plot_level_phenotypes.csv`**: a real trial dataset with columns `GEN`, `REP`, and one column
+   the same taxa × allele shape. Keep script 02's `RADdata()` →
+   `SetDonorParent()`/`SetRecurrentParent()` → `PipelineMapping2Parents()` →
+   `GetWeightedMeanGenotypes()` structure, pointed at the real reads, and drop its synthetic
+   read-count simulation.
+2. **A marker map** in the shape script 01 writes (`marker_id`, `lg_id`, `allele_freq`), saved to
+   `data_simulated/marker_map.rds`. Scripts 02 and 03 both read it, and with real map positions
+   script 02 can run with `useLinkage = TRUE` instead of the `FALSE` this simulation requires.
+3. **`plot_level_phenotypes.csv`**: a real trial dataset with columns `GEN`, `REP`, and one column
    per trait, in the layout scripts 04 and 05 expect.
 
-Scripts 03 to 07 need no changes; they operate on dosage matrices and phenotype tables in the same
-shape regardless of whether the dosage came from simulation or real GBS calling. Re-check
-`freqAllowedDeviation` (script 02) and the missing-rate/MAF QC thresholds (script 03) against the
-real dataset's actual depth/missingness profile before trusting the defaults carried over from this
-simulation.
+Scripts 03 to 05 then carry over unchanged: they operate on a dosage matrix and a plot-level
+phenotype table of the same shape whether the dosage came from simulation or from real GBS calling.
+Script 06's oracle validation (A), and panel A of script 07 that plots it, are the exception, and
+not for an implementation reason: they score each method against the pre-noise true breeding value,
+which exists only because the population is simulated. On real data that target does not exist, so
+(A) has no counterpart and only Table 5's literal gate (B) can be computed.
+
+Re-check `freqAllowedDeviation` (script 02) and the missing-rate/MAF QC thresholds (script 03)
+against the real dataset's actual depth and missingness profile before trusting the values carried
+over from this simulation. On this simulated input those settings leave half the loci without a
+dosage call, see [Known limitations](#known-limitations).
 
 ## Known limitations
 
@@ -247,6 +273,23 @@ simulation.
   sweetpotato meiotic behaviour "does not fit auto- or allopolyploid models cleanly" (Table 2; Gao
   et al. 2020, *PLoS ONE* 15(3), e0229624), so this simulator validates pipeline *mechanics*, not
   real sweetpotato transmission genetics.
+- **polyRAD leaves half the simulated loci without a dosage call** (script 02, carried into script
+  03): on the committed population polyRAD returns no dosage for either allele at 675 of the 1,500
+  loci, and at 75 more it calls only the reference allele, which script 02's alt-allele extraction
+  then drops. So 750 markers reach script 03 entirely missing and are removed by its > 20%
+  missing-rate filter; a further 67 go on MAF, leaving 683. The discarded markers are not the less
+  polymorphic ones (mean MAF 0.318 against 0.313 for those retained), so this is a property of how
+  the mapping pipeline is configured, chiefly the deliberately tight `freqAllowedDeviation = 0.01`,
+  and not MAF filtering of a complete matrix. The setting is left as it is so that the committed
+  results match the archived release; a real dataset should be re-tuned against its own depth and
+  missingness profile.
+- **Untruncated noise in the deposited phenotypes** (script 01): trait values are a trait mean plus
+  a genotype effect plus a Gaussian residual, with no truncation, so
+  `data_simulated/plot_level_phenotypes.csv` holds values outside any physically meaningful range:
+  27 negative Yield plots (minimum −20.6), 82 negative Carotenoid values, and the two visual
+  scores, centred on 5, running from −1.5 to 13.4. This does not bias the comparison, which is
+  scale-free and gives both methods the same phenotypes, but the file should not be reused as a
+  realistic sweetpotato phenotype set.
 - **Parental read counts** (script 02): true parental dosage is not carried over from script 01, so
   parent read counts are reconstructed from the population allele frequency rather than the
   parents' own actual genotypes. A real dataset would genotype the actual parents directly.

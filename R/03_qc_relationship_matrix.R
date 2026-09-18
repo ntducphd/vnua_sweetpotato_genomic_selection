@@ -23,10 +23,16 @@ est_dosage <- readRDS(file.path(IN, "estimated_dosage_matrix.rds"))  # markers x
 mm <- readRDS(file.path(IN, "marker_map.rds"))
 
 # 04. QC filtering ------------------------------------------------------------------
-# Missing-rate and MAF filtering (kept general/real-data-ready even though
-# this simulator produces no missing calls): drop markers with >20% missing
-# genotype calls, and markers with minor allele frequency < 0.05 among the
-# progeny (uninformative for within-family prediction).
+# Missing-rate and MAF filtering: drop markers with >20% missing genotype
+# calls, and markers with minor allele frequency < 0.05 among the progeny
+# (uninformative for within-family prediction).
+# On the committed simulated population the missing-rate filter is not a
+# formality. 02 leaves 675 of the 1,500 loci with no dosage call for either
+# allele and 75 more called only on the reference allele, so 750 markers reach
+# this script entirely NA and are removed here; a further 67 go on MAF, leaving
+# 683. That is where the 1,500 -> 683 reduction comes from, and it is a property
+# of how polyRAD's mapping pipeline is configured in 02 (see its
+# freqAllowedDeviation note), not of MAF filtering a complete matrix.
 miss_rate <- rowMeans(is.na(est_dosage))
 maf <- pmin(rowMeans(est_dosage, na.rm = TRUE) / PLOIDY,
             1 - rowMeans(est_dosage, na.rm = TRUE) / PLOIDY)
@@ -36,17 +42,27 @@ cat(sprintf("QC: %d / %d markers retained (missing<=20%%, MAF>=0.05)\n",
             sum(keep), length(keep)))
 
 dosage_qc <- est_dosage[keep, , drop = FALSE]
-# clip to the valid [0, ploidy] range (polyRAD's posterior mean can slightly
-# undershoot/overshoot near the boundary for very confident calls)
+# Defensive clip to the valid [0, ploidy] range. It is inert on output from
+# GetWeightedMeanGenotypes(minval = 0, maxval = PLOIDY), which rescales into
+# that interval, and is kept for a real-data loader that might supply dosage
+# from another caller.
 dosage_qc[dosage_qc < 0] <- 0
 dosage_qc[dosage_qc > PLOIDY] <- PLOIDY
 
 # 05. Duplicate / near-identical individual check -----------------------------------
 # Genomic analogue of the project's SSR-based identity check: flag progeny pairs
 # whose marker dosage correlation exceeds 0.98 (near-clonal identity, which in a
-# real dataset would indicate accidental replication or a labelling error; none
-# is expected here, since the progeny are simulated independently).
-cor_mat <- cor(dosage_qc, use = "pairwise.complete.obs")
+# real dataset would indicate accidental replication or a labelling error). None
+# is expected here: the 315 progeny are full sibs of one biparental cross, drawn
+# independently of each other, with no duplication introduced.
+# The correlation is computed on marker-CENTRED dosage. On raw 0..6 dosage all
+# individuals share the same marker-frequency profile, which compresses every
+# pair into r = 0.88 to 0.94 on this population and leaves only a narrow margin
+# below the threshold, so anything short of a near-perfect duplicate passes.
+# Centring each marker removes that shared profile: the off-diagonal then runs
+# from -0.30 to 0.29 here, while an injected exact clone still scores 1.00.
+dosage_centred <- dosage_qc - rowMeans(dosage_qc)
+cor_mat <- cor(dosage_centred, use = "pairwise.complete.obs")
 diag(cor_mat) <- NA
 dup_pairs <- which(cor_mat > 0.98, arr.ind = TRUE)
 dup_pairs <- dup_pairs[dup_pairs[, 1] < dup_pairs[, 2], , drop = FALSE]
