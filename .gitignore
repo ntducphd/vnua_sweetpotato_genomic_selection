@@ -1,0 +1,12 @@
+# R artifacts
+.Rhistory
+.Rapp.history
+.RData
+.Ruserdata
+.Rproj.user/
+*.Rproj
+Rplots.pdf
+
+# OS/editor cruft
+.DS_Store
+Thumbs.db

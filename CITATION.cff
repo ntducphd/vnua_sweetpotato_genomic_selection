@@ -1,0 +1,74 @@
+cff-version: 1.2.0
+message: "If you use this software, please cite both the software and the article below."
+title: "Stage-3 Dosage-Aware Genomic Selection Pipeline for Hexaploid Sweetpotato: Simulation-Validated Reference Implementation"
+abstract: >-
+  Reference R implementation of the Stage-3 pilot dosage-aware genomic-selection pipeline described
+  in Table 5 (Section 7) of the associated article: dosage-uncertain genotype calling with polyRAD,
+  hexaploid additive genomic relationship-matrix construction with AGHmatrix, dosage-aware GBLUP
+  with sommer across five target traits under five-fold cross-validation, an MGIDI Stage-1 classical
+  baseline matched to the same trait scope, and the bootstrap confidence-interval gate test that
+  compares them. Validated end to end on a simulated 315-progeny biparental hexaploid population;
+  only the data-loading step needs to change once real genotyping data becomes available.
+type: software
+version: 1.0.0
+license: MIT
+repository-code: "https://github.com/ntducphd/vnua_sweetpotato_genomic_selection"
+authors:
+  - family-names: "Nguyen"
+    given-names: "Trung Duc"
+    affiliation: "Vietnam National University of Agriculture, Hanoi, Viet Nam"
+    email: ntduc@vnua.edu.vn
+    orcid: "https://orcid.org/0000-0003-1225-2515"
+  - family-names: "Pham"
+    given-names: "Quang Tuan"
+    affiliation: "Vietnam National University of Agriculture, Hanoi, Viet Nam"
+  - family-names: "Nguyen"
+    given-names: "Thi Thu"
+    affiliation: "Vietnam National University of Agriculture, Hanoi, Viet Nam"
+  - family-names: "Doan"
+    given-names: "Thu Thuy"
+    affiliation: "Vietnam National University of Agriculture, Hanoi, Viet Nam"
+  - family-names: "Vu"
+    given-names: "Thi Xuan Binh"
+    affiliation: "Vietnam National University of Agriculture, Hanoi, Viet Nam"
+  - family-names: "Nguyen"
+    given-names: "Van Loc"
+    affiliation: "Vietnam National University of Agriculture, Hanoi, Viet Nam"
+keywords:
+  - sweetpotato
+  - Ipomoea batatas
+  - genomic selection
+  - GBLUP
+  - polyploid
+  - hexaploid
+  - dosage-aware
+  - polyRAD
+  - plant breeding
+preferred-citation:
+  type: article
+  title: "AI-assisted genomic selection in sweetpotato: A staged roadmap for polyploid, clonal-propagated breeding"
+  authors:
+    - family-names: "Nguyen"
+      given-names: "Trung Duc"
+      orcid: "https://orcid.org/0000-0003-1225-2515"
+    - family-names: "Pham"
+      given-names: "Quang Tuan"
+    - family-names: "Nguyen"
+      given-names: "Thi Thu"
+    - family-names: "Doan"
+      given-names: "Thu Thuy"
+    - family-names: "Vu"
+      given-names: "Thi Xuan Binh"
+    - family-names: "Nguyen"
+      given-names: "Van Loc"
+  journal: "Ecological Genetics and Genomics"
+  publisher:
+    name: "Elsevier"
+  year: 2026
+  volume: 41
+  # CFF 1.2.0 has no article-number key; 100530 is the article number, carried in `start`
+  # so citation renderers show "41 (2026) 100530".
+  start: 100530
+  issn: "2405-9854"
+  doi: "10.1016/j.egg.2026.100530"
+  url: "https://doi.org/10.1016/j.egg.2026.100530"
